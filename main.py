@@ -20,6 +20,7 @@
 
 """
 
+
 import asyncio
 import json
 import os
@@ -42,9 +43,10 @@ app = Client(
     api_id=os.environ.get("API_ID"),
     api_hash=os.environ.get("API_HASH"),
     device_model=("Ongaku"),
-    app_version=("git-" + git_branch),
-    system_version=(operating_system)
+    app_version=f"git-{git_branch}",
+    system_version=(operating_system),
 )
+
 
 log_channel = os.environ.get("LOG_CHANNEL")
 
@@ -83,7 +85,7 @@ async def main():
         )
         me = await app.get_chat("me")
         global bio_
-        bio_ = me.bio if me.bio else ""
+        bio_ = me.bio or ""
         while True:
             song = await get_song()
             if song not in ["Ongaku: No notification detected", "Ongaku: Bio update skipped: Notification is stale"] and log_channel:
@@ -120,10 +122,10 @@ async def get_song():
             if raw_title != current_[-1]:
                 if len(val) > 70:
                     val = f"▷Now listening: {title}"
-                    if len(val) > 70:
-                        val = f"▷{title}"
-                        if len(val) > 70:
-                            val = val[0:70:]
+                if len(val) > 70:
+                    val = f"▷{title}"
+                if len(val) > 70:
+                    val = val[:70]
                 await app.update_profile(bio=val)
                 current_.append(raw_title)
                 print(val)
@@ -144,9 +146,7 @@ async def about_(app, message: Message):
 async def sync_(app, message: Message):
     await message.delete()
     check_song = await get_song()
-    del_ = False
-    if check_song == "Ongaku: Bio update skipped: Notification is stale":
-        del_ = True
+    del_ = check_song == "Ongaku: Bio update skipped: Notification is stale"
     msg = await message.reply(check_song)
     if del_:
         await asyncio.sleep(10)
@@ -156,11 +156,11 @@ async def sync_(app, message: Message):
 @app.on_message(filters.regex(r"^\.history$") & filters.user(users_list))
 async def history_(app, message: Message):
     await message.delete()
-    history = ""
-    count = 0
-    for i in current_[1:]:
-        count += 1
-        history += f"\n**{count}.** `{i}`"
+    history = "".join(
+        f"\n**{count}.** `{i}`"
+        for count, i in enumerate(current_[1:], start=1)
+    )
+
     if not history:
         history = "Ongaku: Nothing has been played in the current session"
     return await message.reply(history)

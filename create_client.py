@@ -20,6 +20,7 @@
   
 """
 
+
 import asyncio
 import os
 
@@ -33,7 +34,7 @@ a_id = os.environ.get("API_ID")
 a_hash = os.environ.get("API_HASH")
 
 API_ID = int(a_id) if a_id else int(input("Enter API_ID: "))
-API_HASH = a_hash if a_hash else input("Enter API_HASH: ")
+API_HASH = a_hash or input("Enter API_HASH: ")
 with Client("TG_SESSION", api_id=API_ID, api_hash=API_HASH) as app:
     app.send_message("me",f"#STRING_SESSION\n\n```{app.export_session_string()}```")
     print("#Session exported to your saved messages\nPlease add it to config.env")
