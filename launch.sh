@@ -45,7 +45,14 @@ if [ $(uname -o) == "Android" ]; then
 fi
 }
 
+updateRemote() {
+if [ $(git config --get remote.origin.url) == "https://github.com/gibcheesepuffs/ongaku" ]; then
+	git remote set-url origin https://github.com/Ongaku-TG/ongaku.git
+fi
+}
 
+
+updateRemote
 echo "Ongaku: Checking for updates"
 git fetch && git pull
 source venv/bin/activate
